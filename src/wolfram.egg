@@ -1,0 +1,6 @@
+
+((author "Massimo Nocentini")
+ (synopsis "Bindings for the Wolfram Engine.")
+ (license "MIT")
+ (components
+  (extension wolfram)))
