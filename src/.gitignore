@@ -1,0 +1,8 @@
+
+wolfram.build.sh
+wolfram.import.scm
+wolfram.import.so
+wolfram.install.sh
+wolfram.link
+wolfram.so
+wolfram.static.o

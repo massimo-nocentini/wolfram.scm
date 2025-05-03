@@ -3,4 +3,4 @@
  (synopsis "Bindings for the Wolfram Engine.")
  (license "MIT")
  (components
-  (extension wolfram)))
+  (extension wolfram (link-options "-L" "-lWSTP64i4"))))
