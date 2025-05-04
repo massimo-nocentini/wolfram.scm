@@ -103,5 +103,11 @@
 							    (iota i)))))
 	(else (error `(WSGetNext ,wexpr))))))
 
+   (define ((export-format link format) expr)
+     (list->string 
+       (map integer->char
+	    (cdr ((evaluate link) 
+		  `(ToCharacterCode (ExportString ,expr ,(symbol->string format))))))))
+
   )
 
