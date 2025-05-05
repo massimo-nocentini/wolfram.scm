@@ -1,7 +1,7 @@
 
 (module wolfram
   *
-  (import scheme (chicken base) (chicken foreign) (chicken gc) srfi-1 aux)
+  (import scheme (chicken base) (chicken foreign) (chicken gc) srfi-1 srfi-13 aux)
 
   (foreign-declare "#include <wstp.h>")
 
@@ -49,7 +49,7 @@
 
   (define (make-env)
     (let1 (handle (WSInitialize #f))
-          (set-finalizer! handle WSDeinitialize)
+          ;(set-finalizer! handle WSDeinitialize)
           handle))
 
   (define (make-link env/pointer)
@@ -58,12 +58,12 @@
                                          "csi -linkmode connect -linkname 8081 -linkprotocol TCPIP -linkoptions 4"
                                          (location i)))
                         (unless (equal? WSEOK i) (error `(WSOpenString ,p)))
-                        (set-finalizer! p WSClose)
+                        ;(set-finalizer! p WSClose)
                         (✓ (WSActivate p))
                         p)))
 
   (define ((evaluate W) expr)
-    (define link (cdr W))
+    (define link (car W))
     (✓ (WSPutFunction link 'EvaluatePacket 1)) 
     (let put ((e expr))
       (cond
@@ -111,7 +111,7 @@
    (define (make-wolfram-evaluator)
      (let* ((env (make-env))
 	    (link (make-link env)))
-       (evaluate (cons env link))))
+       (evaluate (list link env))))
 
    (define-syntax letwolfram
      (syntax-rules ()
@@ -120,6 +120,8 @@
 
    (define-syntax define-wolfram
      (syntax-rules ()
-       ((define-wolfram W) (define W (make-wolfram-evaluator)))))
+       ((define-wolfram W (E e) ...) (begin
+				       (define W (make-wolfram-evaluator))
+				       (define E (export-format W e)) ...))))
   )
 
