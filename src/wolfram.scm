@@ -52,7 +52,7 @@
           (set-finalizer! handle WSDeinitialize)
           handle))
 
-  (define (openstring env/pointer)
+  (define (make-link env/pointer)
     (let-location ((i int))
                   (let1 (p (WSOpenString env/pointer
                                          "csi -linkmode connect -linkname 8081 -linkprotocol TCPIP -linkoptions 4"
@@ -62,7 +62,8 @@
                         (✓ (WSActivate p))
                         p)))
 
-  (define ((evaluate link) expr)
+  (define ((evaluate W) expr)
+    (define link (cdr W))
     (✓ (WSPutFunction link 'EvaluatePacket 1)) 
     (let put ((e expr))
       (cond
@@ -80,34 +81,45 @@
       (unless (equal? (WSNextPacket link) RETURNPKT) 
 	(✓ (WSNewPacket link))
 	(skip)))
-    (let get ((wexpr (WSGetNext link)))
+    (let get ((tokentype (WSGetNext link)))
       (cond 
-	((equal? wexpr WSTKINT) (let-location ((i integer64)) 
+	((equal? tokentype WSTKINT) (let-location ((i integer64)) 
 					      (✓ (WSGetInteger64 link (location i)))
 					      i))
-	((equal? wexpr WSTKREAL) (let-location ((i double)) 
+	((equal? tokentype WSTKREAL) (let-location ((i double)) 
 					      (✓ (WSGetReal64 link (location i)))
 					      i))
-	((equal? wexpr WSTKSYM) (let-location ((i symbol))
+	((equal? tokentype WSTKSYM) (let-location ((i symbol))
 					      (✓ (WSGetSymbol link (location i)))
 					      ;(let1 (s (string->symbol i))
 					;	    (WSReleaseSymbol link i)
 					;	    s)))
 					i))
-	((equal? wexpr WSTKSTR) (let-location ((i c-string))
+	((equal? tokentype WSTKSTR) (let-location ((i c-string))
 					      (✓ (WSGetString link (location i)))
 					      i))
-	((equal? wexpr WSTKFUNC) (let-location ((f symbol) (i int))
+	((equal? tokentype WSTKFUNC) (let-location ((f symbol) (i int))
 					       (✓ (WSGetFunction link (location f) (location i)))
-					       (cons f (map (λ/_ (get (WSGetNext link)))
-							    (iota i)))))
-	(else (error `(WSGetNext ,wexpr))))))
+					       (cons f (map (λ/_ (get (WSGetNext link))) (iota i)))))
+	(else (error `(WSGetNext ,tokentype))))))
 
-   (define ((export-format link format) expr)
+   (define ((export-format W format) expr)
      (list->string 
        (map integer->char
-	    (cdr ((evaluate link) 
-		  `(ToCharacterCode (ExportString ,expr ,(symbol->string format))))))))
+	    (cdr (W `(ToCharacterCode (ExportString ,expr ,(symbol->string format))))))))
 
+   (define (make-wolfram-evaluator)
+     (let* ((env (make-env))
+	    (link (make-link env)))
+       (evaluate (cons env link))))
+
+   (define-syntax letwolfram
+     (syntax-rules ()
+       ((letwolfram W body ...) (let1 (W (make-wolfram-evaluator))
+				  body ...))))
+
+   (define-syntax define-wolfram
+     (syntax-rules ()
+       ((define-wolfram W) (define W (make-wolfram-evaluator)))))
   )
 
