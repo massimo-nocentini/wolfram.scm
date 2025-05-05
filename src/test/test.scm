@@ -13,11 +13,8 @@
          (display ((evaluate link/pointer) '(Plus x (Plus x x) x) #;(Times 3 4)))
          (display ((evaluate link/pointer) '(ToExpression "3+4/Sqrt[19.2]")))
          `(doc (escape ,((export-format link/pointer 'MathML) `(Plus x (Plus x x) x)))
-	       #;(div (escape ,((export-format link/pointer 'SVG) `(FactorInteger 847932875))))
-(div (escape ,((export-format link/pointer 'SVG) `(DiscretePlot 
-							      (Length (FactorInteger n))
-							      (List n 100)))))
-	       (div (escape ,((export-format link/pointer 'SVG) `(DiscretePlot 
+	       (div (escape ,((export-format link/pointer 'MathML) `(FactorInteger 847932875))))
+	       (div (@ (class "w3-center")) (escape ,((export-format link/pointer 'SVG) `(DiscretePlot 
 							      (Length (FactorInteger n))
 							      (List n 100))))))))
   
@@ -25,9 +22,3 @@
 
 (unittest/✓ wolfram-suite)
 
-         ;`(doc (escape ,(list->string (map integer->char
-					   ;(cdr ((evaluate link/pointer)
-						 ;'(ToCharacterCode 
-						    ;(ExportString 
-						      ;(Plus x (Plus x x) x) 
-						      ;"MathML"))))))))))
