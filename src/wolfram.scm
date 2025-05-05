@@ -49,7 +49,7 @@
 
   (define (make-env)
     (let1 (handle (WSInitialize #f))
-          ;(set-finalizer! handle WSDeinitialize)
+          (set-finalizer! handle WSDeinitialize)
           handle))
 
   (define (make-link env/pointer)
@@ -58,7 +58,7 @@
                                          "csi -linkmode connect -linkname 8081 -linkprotocol TCPIP -linkoptions 4"
                                          (location i)))
                         (unless (equal? WSEOK i) (error `(WSOpenString ,p)))
-                        ;(set-finalizer! p WSClose)
+                        (set-finalizer! p WSClose)
                         (✓ (WSActivate p))
                         p)))
 

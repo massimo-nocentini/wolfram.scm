@@ -17,7 +17,10 @@
 	    " admits the factorization "
 	    (escape ,(->MathML '(FactorInteger 847932875))) 
 	    ". Finally, we show the distribution of the sizes of factorizations of the first 100 numbers:")
-	 (center (escape ,(->SVG '(DiscretePlot (Length (FactorInteger n)) (List n 100)))))))
+	 (center (escape ,(->SVG '(DiscretePlot (Length (FactorInteger n)) (List n 100)))))
+	 (center (escape ,(->SVG '(ToExpression "Plot[Sin[x], {x, 0, 2 Pi}]"))))
+	 (center (escape ,(->SVG '(ToExpression "ComplexPlot3D[Sin[z], {z, -2 Pi - 2 I, 2 Pi + 2 I}, PlotLegends -> Automatic]"))))
+	 (escape ,(->MathML '(ToExpression "Series[Sin[x], {x, 0, 10}]")))))
   )
 
 (unittest/✓ wolfram-suite)
