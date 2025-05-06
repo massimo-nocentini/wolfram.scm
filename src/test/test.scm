@@ -1,13 +1,15 @@
 
 (import aux unittest wolfram srfi-13)
 
+(define-wolfram W (->MathML 'MathML) (->SVG 'SVG))
+
 (define-suite wolfram-suite
 
-  ((doc r) `((structure/section "Introduction")))
+  ((doc r) `((structure/section "Introduction")
+	     (code/lang "mathematica" "ArrayPlot[CellularAutomaton[30, {{1}, 0}, 50]]")
+	     (center (escape ,(->SVG '(ToExpression "ArrayPlot[CellularAutomaton[30, {{1}, 0}, 50]]"))))))
 
   ((test/simple _)
-   (define-wolfram W (->MathML 'MathML) (->SVG 'SVG))
-
    (define expr '(Plus x (Plus x x) x))
    (⊦= '(Times 4 x) (W expr))
    (⊦= '(List (List 5 3) (List 47 1) (List 101 1) (List 1429 1)) (W '(FactorInteger 847932875)))
@@ -20,7 +22,8 @@
 	 (center (escape ,(->SVG '(DiscretePlot (Length (FactorInteger n)) (List n 100)))))
 	 (center (escape ,(->SVG '(ToExpression "Plot[Sin[x], {x, 0, 2 Pi}]"))))
 	 (center (escape ,(->SVG '(ToExpression "ComplexPlot3D[Sin[z], {z, -2 Pi - 2 I, 2 Pi + 2 I}, PlotLegends -> Automatic]"))))
-	 (escape ,(->MathML '(ToExpression "Series[Sin[x], {x, 0, 10}]")))))
+	 (escape ,(->MathML '(ToExpression "Series[Sin[x], {x, 0, 10}]")))
+	 ))
   )
 
 (unittest/✓ wolfram-suite)

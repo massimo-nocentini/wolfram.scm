@@ -30,13 +30,17 @@
 
   (define WSGetInteger64 (foreign-lambda int "WSGetInteger64" c-pointer (c-pointer integer64)))
   (define WSPutInteger64 (foreign-lambda int "WSPutInteger64" c-pointer integer64))
+
   (define WSGetReal64 (foreign-lambda int "WSGetReal64" c-pointer (c-pointer double)))
   (define WSPutReal64 (foreign-lambda int "WSPutReal64" c-pointer double))
+
   (define WSGetSymbol (foreign-lambda int "WSGetSymbol" c-pointer (const (c-pointer symbol))))
   (define WSPutSymbol (foreign-lambda int "WSPutSymbol" c-pointer symbol))
   (define WSReleaseSymbol (foreign-lambda void "WSReleaseSymbol" c-pointer symbol))
+
   (define WSGetString (foreign-lambda int "WSGetString" c-pointer (const (c-pointer c-string))))
   (define WSPutString (foreign-lambda int "WSPutString" c-pointer c-string))
+
   (define WSPutFunction (foreign-lambda int "WSPutFunction" c-pointer symbol int))
   (define WSGetFunction (foreign-lambda int "WSGetFunction" c-pointer (const (c-pointer symbol)) (c-pointer int)))
 
@@ -112,11 +116,6 @@
      (let* ((env (make-env))
 	    (link (make-link env)))
        (evaluate (list link env))))
-
-   (define-syntax letwolfram
-     (syntax-rules ()
-       ((letwolfram W body ...) (let1 (W (make-wolfram-evaluator))
-				  body ...))))
 
    (define-syntax define-wolfram
      (syntax-rules ()
