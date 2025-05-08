@@ -80,6 +80,7 @@
 	((boolean? e) (put (if (equal? e #t) 'True 'False)))
 	((string? e) (✓ (WSPutString link e)))
 	((integer? e) (✓ (WSPutInteger64 link e)))
+	((procedure? e) (put (car (procedure-information e))))
 	((real? e) (✓ (WSPutReal64 link e)))
 	(else (error `(put ,e)))))
     (✓ (WSEndPacket link))
