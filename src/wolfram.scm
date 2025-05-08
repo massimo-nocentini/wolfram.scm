@@ -44,6 +44,8 @@
   (define WSPutFunction (foreign-lambda int "WSPutFunction" c-pointer symbol int))
   (define WSGetFunction (foreign-lambda int "WSGetFunction" c-pointer (const (c-pointer symbol)) (c-pointer int)))
 
+  (define rule/MathML/display/block '(Rule "MathAttributes" (List (Rule "display" "block"))))
+
   (define-syntax ✓
     (syntax-rules ()
       ((✓ expr) (begin 
@@ -75,6 +77,7 @@
 			 (✓ (WSPutFunction link (car e) (length args))) 
 			 (map put args)))
 	((symbol? e) (✓ (WSPutSymbol link e)))
+	((boolean? e) (put (if (equal? e #t) 'True 'False)))
 	((string? e) (✓ (WSPutString link e)))
 	((integer? e) (✓ (WSPutInteger64 link e)))
 	((real? e) (✓ (WSPutReal64 link e)))
@@ -98,7 +101,10 @@
 					      ;(let1 (s (string->symbol i))
 					;	    (WSReleaseSymbol link i)
 					;	    s)))
-					i))
+					(cond
+					  ((equal? i 'True) #t)
+					  ((equal? i 'False) #f)
+					  (else i))))
 	((equal? tokentype WSTKSTR) (let-location ((i c-string))
 					      (✓ (WSGetString link (location i)))
 					      i))
@@ -107,10 +113,10 @@
 					       (cons f (map (λ/_ (get (WSGetNext link))) (iota i)))))
 	(else (error `(WSGetNext ,tokentype))))))
 
-   (define ((export-format W format) expr)
+   (define ((export-format W format) expr . args)
      (list->string 
        (map integer->char
-	    (cdr (W `(ToCharacterCode (ExportString ,expr ,(symbol->string format))))))))
+	    (cdr (W `(ToCharacterCode (ExportString ,expr ,(symbol->string format) ,@args)))))))
 
    (define (make-wolfram-evaluator)
      (let* ((env (make-env))
