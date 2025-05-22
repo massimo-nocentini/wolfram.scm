@@ -1,6 +1,14 @@
 
 ((author "Massimo Nocentini")
- (synopsis "Bindings for the Wolfram Engine.")
+ (synopsis "Bindings for the Wolfram Engine's WSTP expression protocol.")
  (license "MIT")
- (components
-  (extension wolfram (link-options "-L" "-lWSTP64i4"))))
+ (cond-expand
+ (linux 
+  (components (extension wolfram (link-options "-L" "-lWSTP64i4"))))
+  (unix 
+  (components 
+	(extension wolfram 
+		(csc-options "-I/usr/local/include") 
+			(link-options "-framework" "Foundation")
+			(link-options "-L" "-lstdc++")
+ 			(link-options "-L" "-lWSTPi4"))))))
