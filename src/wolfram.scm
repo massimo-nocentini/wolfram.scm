@@ -1,7 +1,7 @@
 
 (module wolfram
   *
-  (import scheme (chicken base) (chicken foreign) (chicken gc) srfi-1 srfi-13 aux)
+  (import scheme (chicken base) (chicken foreign) (chicken gc) (chicken process-context) srfi-1 srfi-13 aux)
 
   (foreign-declare "#include <wstp.h>")
 
@@ -61,7 +61,10 @@
   (define (make-link env/pointer)
     (let-location ((i int))
                   (let1 (p (WSOpenString env/pointer
-                                         "csi -linkmode connect -linkname 8081 -linkprotocol TCPIP -linkoptions 4"
+                                         (string-append 
+                                          "csi -linkmode connect -linkname "
+                                          (or (get-environment-variable "CHICKEN_WOLFRAM_PORT") "8081")
+                                          " -linkprotocol TCPIP -linkoptions 4")
                                          (location i)))
                         (unless (equal? WSEOK i) (error `(WSOpenString ,p)))
                         (set-finalizer! p WSClose)
