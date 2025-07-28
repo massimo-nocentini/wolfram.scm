@@ -5,3 +5,6 @@ test:
 
 install:
 	chicken-install -sudo
+
+format:
+	scheme-indent -T 2 < wolfram.scm > wolfram.scm.tmp && mv wolfram.scm.tmp wolfram.scm

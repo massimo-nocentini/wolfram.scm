@@ -6,7 +6,7 @@
   (foreign-declare "#include <wstp.h>")
 
   (define WSEOK (foreign-value "WSEOK" int))
-  
+
   (define RETURNPKT (foreign-value "RETURNPKT" int))
 
   (define WSTKERR (foreign-value "WSTKERR" int))
@@ -48,10 +48,10 @@
 
   (define-syntax ✓
     (syntax-rules ()
-      ((✓ expr) (begin 
-		    (when (zero? expr) 
-		      (error (quote expr))) 
-		    (void)))))
+      ((✓ expr) (begin
+                    (when (zero? expr) 
+                      (error (quote expr))) 
+                    (void)))))
 
   (define (make-env)
     (let1 (handle (WSInitialize #f))
@@ -61,10 +61,10 @@
   (define (make-link env/pointer)
     (let-location ((i int))
                   (let1 (p (WSOpenString env/pointer
-                                         (string-append 
-                                          "csi -linkmode connect -linkname "
-                                          (or (get-environment-variable "CHICKEN_WOLFRAM_PORT") "8081")
-                                          " -linkprotocol TCPIP -linkoptions 4")
+                                         (string-append
+                                           "csi -linkmode connect -linkname "
+                                           (or (get-environment-variable "CHICKEN_WOLFRAM_PORT") "8081")
+                                           " -linkprotocol TCPIP -linkoptions 4")
                                          (location i)))
                         (unless (equal? WSEOK i) (error `(WSOpenString ,p)))
                         (set-finalizer! p WSClose)
@@ -76,61 +76,59 @@
     (✓ (WSPutFunction link 'EvaluatePacket 1)) 
     (let put ((e expr))
       (cond
-	((pair? e) (let1 (args (cdr e)) 
-			 (✓ (WSPutFunction link (car e) (length args))) 
-			 (map put args)))
-	((symbol? e) (✓ (WSPutSymbol link e)))
-	((boolean? e) (put (if (equal? e #t) 'True 'False)))
-	((string? e) (✓ (WSPutString link e)))
-	((integer? e) (✓ (WSPutInteger64 link e)))
-	((procedure? e) (put (car (procedure-information e))))
-	((real? e) (✓ (WSPutReal64 link e)))
-	(else (error `(put ,e)))))
+        ((pair? e) (let1 (args (cdr e)) 
+                         (✓ (WSPutFunction link (car e) (length args))) 
+                         (map put args)))
+        ((symbol? e) (✓ (WSPutSymbol link e)))
+        ((boolean? e) (put (if (equal? e #t) 'True 'False)))
+        ((string? e) (✓ (WSPutString link e)))
+        ((integer? e) (✓ (WSPutInteger64 link e)))
+        ((procedure? e) (put (car (procedure-information e))))
+        ((real? e) (✓ (WSPutReal64 link e)))
+        (else (error `(put ,e)))))
     (✓ (WSEndPacket link))
     (✓ (WSFlush link))
     (let skip ()
       (unless (equal? (WSNextPacket link) RETURNPKT) 
-	(✓ (WSNewPacket link))
-	(skip)))
+        (✓ (WSNewPacket link))
+        (skip)))
     (let get ((tokentype (WSGetNext link)))
-      (cond 
-	((equal? tokentype WSTKINT) (let-location ((i integer64)) 
-					      (✓ (WSGetInteger64 link (location i)))
-					      i))
-	((equal? tokentype WSTKREAL) (let-location ((i double)) 
-					      (✓ (WSGetReal64 link (location i)))
-					      i))
-	((equal? tokentype WSTKSYM) (let-location ((i symbol))
-					      (✓ (WSGetSymbol link (location i)))
-					      ;(let1 (s (string->symbol i))
-					;	    (WSReleaseSymbol link i)
-					;	    s)))
-					(cond
-					  ((equal? i 'True) #t)
-					  ((equal? i 'False) #f)
-					  (else i))))
-	((equal? tokentype WSTKSTR) (let-location ((i c-string))
-					      (✓ (WSGetString link (location i)))
-					      i))
-	((equal? tokentype WSTKFUNC) (let-location ((f symbol) (i int))
-					       (✓ (WSGetFunction link (location f) (location i)))
-					       (cons f (map (λ/_ (get (WSGetNext link))) (iota i)))))
-	(else (error `(WSGetNext ,tokentype))))))
+      (cond
+        ((equal? tokentype WSTKINT) (let-location ((i integer64)) 
+                                                  (✓ (WSGetInteger64 link (location i)))
+                                                  i))
+        ((equal? tokentype WSTKREAL) (let-location ((i double)) 
+                                                   (✓ (WSGetReal64 link (location i)))
+                                                   i))
+        ((equal? tokentype WSTKSYM) (let-location ((i symbol))
+                                                  (✓ (WSGetSymbol link (location i)))
+                                                  (cond
+                                                    ((equal? i 'True) #t)
+                                                    ((equal? i 'False) #f)
+                                                    (else i))))
+        ((equal? tokentype WSTKSTR) (let-location ((i c-string))
+                                                  (✓ (WSGetString link (location i)))
+                                                  i))
+        ((equal? tokentype WSTKFUNC) (let-location ((f symbol) (i int))
+                                                   (✓ (WSGetFunction link (location f) (location i)))
+                                                   (cons f (map (λ/_ (get (WSGetNext link))) (iota i)))))
+        (else (error `(WSGetNext ,tokentype))))))
 
-   (define ((export-format W format) expr . args)
-     (list->string 
-       (map integer->char
-	    (cdr (W `(ToCharacterCode (ExportString ,expr ,(symbol->string format) ,@args)))))))
+  (define ((export-format W format) expr . args)
+    (list->string
+      (map integer->char
+        (cdr (W `(ToCharacterCode (ExportString ,expr ,(symbol->string format) ,@args)))))))
 
-   (define (make-wolfram-evaluator)
-     (let* ((env (make-env))
-	    (link (make-link env)))
-       (evaluate (list link env))))
+  (define (make-wolfram-evaluator)
+    (let* ((env (make-env))
+           (link (make-link env)))
+      (evaluate (list link env))))
 
-   (define-syntax define-wolfram
-     (syntax-rules ()
-       ((define-wolfram W (E e) ...) (begin
-				       (define W (make-wolfram-evaluator))
-				       (define E (export-format W e)) ...))))
+  (define-syntax define-wolfram
+    (syntax-rules ()
+      ((define-wolfram W (E e) ...) (begin
+                                      (define W (make-wolfram-evaluator))
+                                      (define E (export-format W e)) ...))))
   )
+
 
