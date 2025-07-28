@@ -116,9 +116,7 @@
         (else (error `(WSGetNext ,tokentype))))))
 
   (define ((export-format W format) expr . args)
-    (list->string
-      (map integer->char
-        (cdr (W `(ToCharacterCode (ExportString ,expr ,(symbol->string format) ,@args)))))))
+    (W `(ExportString ,expr ,(symbol->string format) ,@args)))
 
   (define (make-wolfram-evaluator)
     (let* ((env (make-env))
