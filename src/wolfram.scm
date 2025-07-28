@@ -39,7 +39,7 @@
   (define WSReleaseSymbol (foreign-lambda void "WSReleaseSymbol" c-pointer symbol))
 
   (define WSGetByteString (foreign-lambda int "WSGetByteString" c-pointer (const (c-pointer unsigned-c-string)) (c-pointer int) integer64))
-  (define WSPutString (foreign-lambda int "WSPutString" c-pointer c-string))
+  (define WSPutByteString (foreign-lambda int "WSPutByteString" c-pointer (const unsigned-c-string) int))
 
   (define WSPutFunction (foreign-lambda int "WSPutFunction" c-pointer symbol int))
   (define WSGetFunction (foreign-lambda int "WSGetFunction" c-pointer (const (c-pointer symbol)) (c-pointer int)))
@@ -81,7 +81,7 @@
                          (map put args)))
         ((symbol? e) (✓ (WSPutSymbol link e)))
         ((boolean? e) (put (if (equal? e #t) 'True 'False)))
-        ((string? e) (✓ (WSPutString link e)))
+        ((string? e) (✓ (WSPutByteString link e (string-length e))))
         ((integer? e) (✓ (WSPutInteger64 link e)))
         ((procedure? e) (put (car (procedure-information e))))
         ((real? e) (✓ (WSPutReal64 link e)))
@@ -138,6 +138,7 @@
   (define (display/OutputForm W) (o (λ/_ (newline)) display (->string/OutputForm W)))
 
   )
+
 
 
 

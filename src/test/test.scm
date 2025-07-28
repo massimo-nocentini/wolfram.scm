@@ -26,9 +26,11 @@
          ))
   )
 
-((display/OutputForm W) `(ToExpression "Identity[x/Sqrt[5] + y^2 + 1/z]")))
+#;((display/OutputForm W) `(ToExpression "Identity[x/Sqrt[5] + y^2 + 1/z]"))
+#;((display/OutputForm W) `(ToExpression "Series[Sin[x], {x, 0, 10}]"))
 
 (unittest/✓ wolfram-suite)
+
 
 
 
