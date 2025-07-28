@@ -38,7 +38,7 @@
   (define WSPutSymbol (foreign-lambda int "WSPutSymbol" c-pointer symbol))
   (define WSReleaseSymbol (foreign-lambda void "WSReleaseSymbol" c-pointer symbol))
 
-  (define WSGetString (foreign-lambda int "WSGetString" c-pointer (const (c-pointer c-string))))
+  (define WSGetByteString (foreign-lambda int "WSGetByteString" c-pointer (const (c-pointer unsigned-c-string)) (c-pointer int) integer64))
   (define WSPutString (foreign-lambda int "WSPutString" c-pointer c-string))
 
   (define WSPutFunction (foreign-lambda int "WSPutFunction" c-pointer symbol int))
@@ -106,8 +106,9 @@
                                                     ((equal? i 'True) #t)
                                                     ((equal? i 'False) #f)
                                                     (else i))))
-        ((equal? tokentype WSTKSTR) (let-location ((i c-string))
-                                                  (✓ (WSGetString link (location i)))
+        ((equal? tokentype WSTKSTR) (let-location ((i c-string)
+                                                   (n integer64))
+                                                  (✓ (WSGetByteString link (location i) (location n) 0))
                                                   i))
         ((equal? tokentype WSTKFUNC) (let-location ((f symbol) (i int))
                                                    (✓ (WSGetFunction link (location f) (location i)))
@@ -129,6 +130,21 @@
       ((define-wolfram W (E e) ...) (begin
                                       (define W (make-wolfram-evaluator))
                                       (define E (export-format W e)) ...))))
+
+  (define (->string/form W form) (λ (expr) (W `(ToString ,expr ,form))))
+  (define (->string/TeXForm W) (->string/form W 'TeXForm))
+  (define (->string/OutputForm W) (->string/form W 'OutputForm))
+
+  (define (display/OutputForm W) (o (λ/_ (newline)) display (->string/OutputForm W)))
+
   )
+
+
+
+
+
+
+
+
 
 
