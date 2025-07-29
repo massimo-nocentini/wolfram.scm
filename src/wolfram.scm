@@ -60,8 +60,11 @@
 
   (define (make-link env/pointer)
     (let-location ((i int))
-                  (let* ((port (or (get-environment-variable "CHICKEN_WOLFRAM_PORT") "31415")); default port
-                         (connection-string (string-append "csi -linkmode connect -linkname " port " -linkprotocol TCPIP -linkoptions 4"))
+                  (let* ((host (get-environment-variable "CHICKEN_WOLFRAM_HOST"))
+                         (port (or (get-environment-variable "CHICKEN_WOLFRAM_PORT") "31415")); default port
+                         (connection-string (string-append "csi -linkmode connect -linkname " 
+                                                           port (if (string? host) (string-append "@" host) "") 
+                                                           " -linkprotocol TCPIP -linkoptions 4"))
                          (p (WSOpenString env/pointer connection-string (location i))))
                     (unless (equal? WSEOK i) (error `(WSOpenString ,p)))
                     (set-finalizer! p WSClose)
@@ -132,6 +135,9 @@
   (define (display/OutputForm W) (o (λ/_ (newline) (void)) display (->string/OutputForm W)))
 
   )
+
+
+
 
 
 
