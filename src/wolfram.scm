@@ -63,7 +63,7 @@
                   (let1 (p (WSOpenString env/pointer
                                          (string-append
                                            "csi -linkmode connect -linkname "
-                                           (or (get-environment-variable "CHICKEN_WOLFRAM_PORT") "8081")
+                                           (or (get-environment-variable "CHICKEN_WOLFRAM_PORT") "31415") ; default port
                                            " -linkprotocol TCPIP -linkoptions 4")
                                          (location i)))
                         (unless (equal? WSEOK i) (error `(WSOpenString ,p)))
@@ -71,8 +71,7 @@
                         (✓ (WSActivate p))
                         p)))
 
-  (define ((evaluate W) expr)
-    (define link (car W))
+  (define ((evaluate link env) expr)    
     (✓ (WSPutFunction link 'EvaluatePacket 1)) 
     (let put ((e expr))
       (cond
@@ -106,7 +105,7 @@
                                                     ((equal? i 'True) #t)
                                                     ((equal? i 'False) #f)
                                                     (else i))))
-        ((equal? tokentype WSTKSTR) (let-location ((i c-string)
+        ((equal? tokentype WSTKSTR) (let-location ((i unsigned-c-string)
                                                    (n integer64))
                                                   (✓ (WSGetByteString link (location i) (location n) 0))
                                                   i))
@@ -121,7 +120,7 @@
   (define (make-wolfram-evaluator)
     (let* ((env (make-env))
            (link (make-link env)))
-      (evaluate (list link env))))
+      (evaluate link env)))
 
   (define-syntax define-wolfram
     (syntax-rules ()
@@ -136,6 +135,8 @@
   (define (display/OutputForm W) (o (λ/_ (newline)) display (->string/OutputForm W)))
 
   )
+
+
 
 
 
