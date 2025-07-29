@@ -60,16 +60,13 @@
 
   (define (make-link env/pointer)
     (let-location ((i int))
-                  (let1 (p (WSOpenString env/pointer
-                                         (string-append
-                                           "csi -linkmode connect -linkname "
-                                           (or (get-environment-variable "CHICKEN_WOLFRAM_PORT") "31415") ; default port
-                                           " -linkprotocol TCPIP -linkoptions 4")
-                                         (location i)))
-                        (unless (equal? WSEOK i) (error `(WSOpenString ,p)))
-                        (set-finalizer! p WSClose)
-                        (✓ (WSActivate p))
-                        p)))
+                  (let* ((port (or (get-environment-variable "CHICKEN_WOLFRAM_PORT") "31415")); default port
+                         (connection-string (string-append "csi -linkmode connect -linkname " port " -linkprotocol TCPIP -linkoptions 4"))
+                         (p (WSOpenString env/pointer connection-string (location i))))
+                    (unless (equal? WSEOK i) (error `(WSOpenString ,p)))
+                    (set-finalizer! p WSClose)
+                    (✓ (WSActivate p))
+                    p)))
 
   (define ((evaluate link env) expr)    
     (✓ (WSPutFunction link 'EvaluatePacket 1)) 
@@ -132,9 +129,13 @@
   (define (->string/TeXForm W) (->string/form W 'TeXForm))
   (define (->string/OutputForm W) (->string/form W 'OutputForm))
 
-  (define (display/OutputForm W) (o (λ/_ (newline)) display (->string/OutputForm W)))
+  (define (display/OutputForm W) (o (λ/_ (newline) (void)) display (->string/OutputForm W)))
 
   )
+
+
+
+
 
 
 
