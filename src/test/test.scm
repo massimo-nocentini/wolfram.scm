@@ -1,7 +1,7 @@
 
 (import aux unittest wolfram srfi-13)
 
-(define-wolfram W (->MathML 'MathML) (->SVG 'SVG))
+(define-wolfram (W ->wolfram) (->MathML 'MathML) (->SVG 'SVG))
 
 (define-suite wolfram-suite
 
@@ -26,26 +26,12 @@
          ))
   )
 
-#;((display/OutputForm W) `(ToExpression "Identity[x/Sqrt[5] + y^2 + 1/z]"))
-#;((display/OutputForm W) `(ToExpression "Series[Sin[x], {x, 0, 10}]"))
+#|
+
+(->wolfram `(ToExpression "Identity[x/Sqrt[5] + y^2 + 1/z]"))
+(->wolfram `(ToExpression "Series[Sin[x], {x, 0, 10}]"))
+(->wolfram `(Append ,(->wolfram `(List a b)) (List b)))
+
+|#
 
 (unittest/✓ wolfram-suite)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

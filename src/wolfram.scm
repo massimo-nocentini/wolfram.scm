@@ -71,10 +71,19 @@
                     (✓ (WSActivate p))
                     p)))
 
-  (define ((evaluate link env) expr)    
+  (define-record wolfram-value env link eval expr)
+
+  (set-record-printer! wolfram-value
+                       (lambda (x out)
+                         (let* ((W (wolfram-value-eval x))
+                                (P (->string/OutputForm W)))
+                           (display (P (wolfram-value-expr x)) out))))
+
+  (define ((evaluate link) expr)    
     (✓ (WSPutFunction link 'EvaluatePacket 1)) 
     (let put ((e expr))
       (cond
+        ((wolfram-value? e) (put (wolfram-value-expr e)))
         ((pair? e) (let1 (args (cdr e)) 
                          (✓ (WSPutFunction link (car e) (length args))) 
                          (map put args)))
@@ -115,26 +124,31 @@
         (else (error `(WSGetNext ,tokentype))))))
 
   (define ((export-format W format) expr . args)
-    (W `(ExportString ,expr ,(symbol->string format) ,@args)))
-
-  (define (make-wolfram-evaluator)
-    (let* ((env (make-env))
-           (link (make-link env)))
-      (evaluate link env)))
+    (W `(ExportString ,expr ,(symbol->string format) ,@args)))  
 
   (define-syntax define-wolfram
     (syntax-rules ()
-      ((define-wolfram W (E e) ...) (begin
-                                      (define W (make-wolfram-evaluator))
-                                      (define E (export-format W e)) ...))))
+      ((define-wolfram (W ->wolfram) (E e) ...) (begin
+                                                  (define env (make-env))
+                                                  (define link (make-link env))
+                                                  (define W (evaluate link))
+                                                  (define (->wolfram v) (make-wolfram-value env link W v))
+                                                  (define E (export-format W e)) ...))
+      ((define-wolfram W (E e) ...) (define-wolfram (W _) (E e) ...))))
 
   (define (->string/form W form) (λ (expr) (W `(ToString ,expr ,form))))
   (define (->string/TeXForm W) (->string/form W 'TeXForm))
   (define (->string/OutputForm W) (->string/form W 'OutputForm))
 
-  (define (display/OutputForm W) (o (λ/_ (newline) (void)) display (->string/OutputForm W)))
+  (define default-outform-parameter (make-parameter ->string/OutputForm))
+  (define (display/OutputForm W) (o (λ/_ (newline) (void)) display ((default-outform-parameter) W)))
 
   )
+
+
+
+
+
 
 
 
