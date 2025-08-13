@@ -35,10 +35,9 @@
   (define WSPutReal64 (foreign-lambda int "WSPutReal64" c-pointer double))
 
   (define WSGetSymbol (foreign-lambda int "WSGetSymbol" c-pointer (const (c-pointer symbol))))
-  (define WSPutSymbol (foreign-lambda int "WSPutSymbol" c-pointer symbol))
-  (define WSReleaseSymbol (foreign-lambda void "WSReleaseSymbol" c-pointer symbol))
+  (define WSPutSymbol (foreign-lambda int "WSPutSymbol" c-pointer symbol))  
 
-  (define WSGetByteString (foreign-lambda int "WSGetByteString" c-pointer (const (c-pointer unsigned-c-string)) (c-pointer int) integer64))
+  (define WSGetUTF8String (foreign-lambda int "WSGetUTF8String" c-pointer (const (c-pointer unsigned-c-string)) (c-pointer int) (c-pointer int)))
   (define WSPutByteString (foreign-lambda int "WSPutByteString" c-pointer (const unsigned-c-string) int))
 
   (define WSPutFunction (foreign-lambda int "WSPutFunction" c-pointer symbol int))
@@ -76,7 +75,7 @@
   (set-record-printer! wolfram-value
                        (lambda (x out)
                          (let* ((W (wolfram-value-eval x))
-                                (P (->string/OutputForm W)))
+                                (P ((default-outform-parameter) W)))
                            (display (P (wolfram-value-expr x)) out))))
 
   (define ((evaluate link) expr)    
@@ -114,9 +113,9 @@
                                                     ((equal? i 'True) #t)
                                                     ((equal? i 'False) #f)
                                                     (else i))))
-        ((equal? tokentype WSTKSTR) (let-location ((i unsigned-c-string)
-                                                   (n integer64))
-                                                  (✓ (WSGetByteString link (location i) (location n) 0))
+        ((equal? tokentype WSTKSTR) (let-location ((i unsigned-c-string) (n int))
+                                                  (✓ (WSGetUTF8String link (location i) (location n) #f))
+                                                  (assert (equal? n (string-length i)))
                                                   i))
         ((equal? tokentype WSTKFUNC) (let-location ((f symbol) (i int))
                                                    (✓ (WSGetFunction link (location f) (location i)))
@@ -144,6 +143,7 @@
   (define (display/OutputForm W) (o (λ/_ (newline) (void)) display ((default-outform-parameter) W)))
 
   )
+
 
 
 

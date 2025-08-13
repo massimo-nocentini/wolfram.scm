@@ -31,6 +31,7 @@
 (->wolfram `(ToExpression "Identity[x/Sqrt[5] + y^2 + 1/z]"))
 (->wolfram `(ToExpression "Series[Sin[x], {x, 0, 10}]"))
 (->wolfram `(Append ,(->wolfram `(List a b)) (List b)))
+(->wolfram `(Information Information))
 
 |#
 
