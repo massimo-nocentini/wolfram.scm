@@ -1,7 +1,7 @@
 
 (module wolfram
   *
-  (import scheme (chicken base) (chicken foreign) (chicken gc) (chicken process-context) srfi-1 srfi-13 aux)
+  (import scheme (chicken base) (chicken foreign) (chicken gc) (chicken process-context) srfi-1 srfi-13 (aux base))
 
   (foreign-declare "#include <wstp.h>")
 
@@ -143,6 +143,7 @@
   (define (display/OutputForm W) (o (λ/_ (newline) (void)) display ((default-outform-parameter) W)))
 
   )
+
 
 
 

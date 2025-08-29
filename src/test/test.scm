@@ -1,5 +1,5 @@
 
-(import aux unittest wolfram srfi-13)
+(import (aux base) (aux unittest) wolfram srfi-13)
 
 (define-wolfram (W ->wolfram) (->MathML 'MathML) (->SVG 'SVG))
 
