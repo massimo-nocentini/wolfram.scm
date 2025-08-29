@@ -1,9 +1,13 @@
 
 
 test:
-	cd test && CHICKEN_WOLFRAM_HOST=localhost CHICKEN_WOLFRAM_PORT=8081 csi -s test.scm
-	cd test && CHICKEN_WOLFRAM_HOST=localhost CHICKEN_WOLFRAM_PORT=8081 csi -s hansei-base.scm
-	cd test && CHICKEN_WOLFRAM_HOST=localhost CHICKEN_WOLFRAM_PORT=8081 csi -s hansei-variable-elimination.scm
+	cd test && CHICKEN_WOLFRAM_PORT=8081 csi -s test.scm
+
+hansei-base:
+	cd test && CHICKEN_WOLFRAM_PORT=8081 csi -s hansei-base.scm
+
+hansei-variable-elimination:
+	cd test && CHICKEN_WOLFRAM_PORT=8081 csi -s hansei-variable-elimination.scm
 
 install:
 	chicken-install -sudo

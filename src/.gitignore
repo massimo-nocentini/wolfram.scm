@@ -6,3 +6,5 @@ wolfram.install.sh
 wolfram.link
 wolfram.so
 wolfram.static.o
+
+test/*.html
