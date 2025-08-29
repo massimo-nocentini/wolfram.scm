@@ -54,7 +54,7 @@
 
   (define (make-env)
     (let1 (handle (WSInitialize #f))
-          ;(set-finalizer! handle WSDeinitialize)
+          (set-finalizer! handle WSDeinitialize)
           handle))
 
   (define (make-link env/pointer)
@@ -143,6 +143,7 @@
   (define (display/OutputForm W) (o (λ/_ (newline) (void)) display ((default-outform-parameter) W)))
 
   )
+
 
 
 
