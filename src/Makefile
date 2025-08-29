@@ -1,12 +1,8 @@
 
 
-test:
+hansei:
 	cd test && CHICKEN_WOLFRAM_PORT=8081 csi -s test.scm
-
-hansei-base:
 	cd test && CHICKEN_WOLFRAM_PORT=8081 csi -s hansei-base.scm
-
-hansei-variable-elimination:
 	cd test && CHICKEN_WOLFRAM_PORT=8081 csi -s hansei-variable-elimination.scm
 
 install:
