@@ -119,7 +119,7 @@
                                                   i))
         ((equal? tokentype WSTKFUNC) (let-location ((f symbol) (i int))
                                                    (✓ (WSGetFunction link (location f) (location i)))
-                                                   (cons f (map (λ/_ (get (WSGetNext link))) (iota i)))))
+                                                   (cons f (map (λ_ (get (WSGetNext link))) (iota i)))))
         (else (error `(WSGetNext ,tokentype))))))
 
   (define ((export-format W format) expr . args)
@@ -140,7 +140,7 @@
   (define (->string/OutputForm W) (->string/form W 'OutputForm))
 
   (define default-outform-parameter (make-parameter ->string/OutputForm))
-  (define (display/OutputForm W) (o (λ/_ (newline) (void)) display ((default-outform-parameter) W)))
+  (define (display/OutputForm W) (o (λ_ (newline) (void)) display ((default-outform-parameter) W)))
 
   )
 
