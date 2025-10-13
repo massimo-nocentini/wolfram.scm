@@ -6,7 +6,7 @@ hansei:
 	cd test && CHICKEN_WOLFRAM_PORT=8081 csi -s hansei-variable-elimination.scm
 
 install:
-	chicken-install -sudo
+	chicken-install
 
 format:
 	scheme-indent -T 2 < wolfram.scm > wolfram.scm.tmp && mv wolfram.scm.tmp wolfram.scm
