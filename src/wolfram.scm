@@ -1,4 +1,3 @@
-
 (module wolfram
   *
   (import scheme (chicken base) (chicken foreign) (chicken gc) (chicken process-context) srfi-1 srfi-13 (aux base))
@@ -18,7 +17,7 @@
 
   (define WSInitialize (foreign-lambda c-pointer "WSInitialize" c-pointer))
   (define WSDeinitialize (foreign-lambda void "WSDeinitialize" c-pointer))
-  (define WSOpenString (foreign-lambda c-pointer "WSOpenString" c-pointer c-string (c-pointer int)))
+  (define WSOpenString (foreign-lambda c-pointer "WSOpenString" c-pointer (const c-string) (c-pointer int)))
   (define WSClose (foreign-lambda void "WSClose" c-pointer))
   (define WSActivate (foreign-lambda int "WSActivate" c-pointer))
 
@@ -31,17 +30,75 @@
   (define WSGetInteger64 (foreign-lambda int "WSGetInteger64" c-pointer (c-pointer integer64)))
   (define WSPutInteger64 (foreign-lambda int "WSPutInteger64" c-pointer integer64))
 
-  (define WSGetReal64 (foreign-lambda int "WSGetReal64" c-pointer (c-pointer double)))
-  (define WSPutReal64 (foreign-lambda int "WSPutReal64" c-pointer double))
+  (define WSGetDouble (foreign-lambda int "WSGetDouble" c-pointer (c-pointer double)))
+  (define WSPutDouble (foreign-lambda int "WSPutDouble" c-pointer double))
 
-  (define WSGetSymbol (foreign-lambda int "WSGetSymbol" c-pointer (const (c-pointer symbol))))
-  (define WSPutSymbol (foreign-lambda int "WSPutSymbol" c-pointer symbol))  
+  (define WSGetUTF8Symbol (foreign-primitive ((c-pointer lp)) #<<TAG
 
-  (define WSGetUTF8String (foreign-lambda int "WSGetUTF8String" c-pointer (const (c-pointer unsigned-c-string)) (c-pointer int) (c-pointer int)))
+    const unsigned char *symbol;
+    int bytes;
+    int characters;
+
+    C_word res = C_SCHEME_UNDEFINED;
+
+    if(WSGetUTF8Symbol(lp, &symbol, &bytes, &characters))
+    {
+        C_word *ptr = C_alloc(C_SIZEOF_INTERNED_SYMBOL(bytes));
+        res = C_intern(&ptr, bytes, (char *)symbol);    
+    }
+
+    WSReleaseUTF8Symbol(lp, symbol, bytes);
+
+    C_kontinue (C_k, res);
+
+TAG
+  ))
+
+  (define WSPutSymbol (foreign-lambda int "WSPutSymbol" c-pointer symbol))
+
+  (define WSGetUTF8String (foreign-primitive ((c-pointer lp)) #<<TAG
+
+    const unsigned char *symbol;
+    int bytes;
+    int characters;
+
+    C_word res = C_SCHEME_UNDEFINED;
+
+    if(WSGetUTF8String(lp, &symbol, &bytes, &characters))
+    {
+        C_word *ptr = C_alloc(C_SIZEOF_STRING(bytes));
+        res = C_string(&ptr, bytes, (char *)symbol);    
+    }
+
+    WSReleaseUTF8String(lp, symbol, bytes);
+
+    C_kontinue (C_k, res);
+
+TAG
+  ))
+
   (define WSPutByteString (foreign-lambda int "WSPutByteString" c-pointer (const unsigned-c-string) int))
 
   (define WSPutFunction (foreign-lambda int "WSPutFunction" c-pointer symbol int))
-  (define WSGetFunction (foreign-lambda int "WSGetFunction" c-pointer (const (c-pointer symbol)) (c-pointer int)))
+  (define WSGetUTF8Function (foreign-primitive ((c-pointer lp) ((c-pointer int) n)) #<<TAG
+
+    const unsigned char *symbol;
+    int bytes;
+
+    C_word res = C_SCHEME_UNDEFINED;
+
+    if(WSGetUTF8Function(lp, &symbol, &bytes, n))
+    {
+        C_word *ptr = C_alloc(C_SIZEOF_INTERNED_SYMBOL(bytes));
+        res = C_intern(&ptr, bytes, (char *)symbol);    
+    }
+
+    WSReleaseUTF8Symbol(lp, symbol, bytes);
+
+    C_kontinue (C_k, res);
+
+TAG
+  ))
 
   (define rule/MathML/display/block '(Rule "MathAttributes" (List (Rule "display" "block"))))
 
@@ -91,7 +148,7 @@
         ((string? e) (✓ (WSPutByteString link e (string-length e))))
         ((integer? e) (✓ (WSPutInteger64 link e)))
         ((procedure? e) (put (car (procedure-information e))))
-        ((real? e) (✓ (WSPutReal64 link e)))
+        ((real? e) (✓ (WSPutDouble link e)))
         (else (error `(put ,e)))))
     (✓ (WSEndPacket link))
     (✓ (WSFlush link))
@@ -105,21 +162,18 @@
                                                   (✓ (WSGetInteger64 link (location i)))
                                                   i))
         ((equal? tokentype WSTKREAL) (let-location ((i double)) 
-                                                   (✓ (WSGetReal64 link (location i)))
+                                                   (✓ (WSGetDouble link (location i)))
                                                    i))
-        ((equal? tokentype WSTKSYM) (let-location ((i symbol))
-                                                  (✓ (WSGetSymbol link (location i)))
-                                                  (cond
-                                                    ((equal? i 'True) #t)
-                                                    ((equal? i 'False) #f)
-                                                    (else i))))
-        ((equal? tokentype WSTKSTR) (let-location ((i unsigned-c-string) (n int))
-                                                  (✓ (WSGetUTF8String link (location i) (location n) #f))
-                                                  (assert (equal? n (string-length i)))
-                                                  i))
-        ((equal? tokentype WSTKFUNC) (let-location ((f symbol) (i int))
-                                                   (✓ (WSGetFunction link (location f) (location i)))
-                                                   (cons f (map (λ_ (get (WSGetNext link))) (iota i)))))
+        ((equal? tokentype WSTKSYM) (let1 (i (WSGetUTF8Symbol link)) (✓ (if (void? i) 0 1))
+                                      (cond
+                                        ((equal? i 'True) #t)
+                                        ((equal? i 'False) #f)
+                                        (else i))))
+        ((equal? tokentype WSTKSTR) (let1 (i (WSGetUTF8String link)) (✓ (if (void? i) 0 1))                                                  
+                                      i))
+        ((equal? tokentype WSTKFUNC) (let-location ((i int))
+                                        (let1 (f (WSGetUTF8Function link (location i))) (✓ (if (void? f) 0 1))
+                                          (cons f (map (λ_ (get (WSGetNext link))) (iota i))))))
         (else (error `(WSGetNext ,tokentype))))))
 
   (define ((export-format W format) expr . args)
