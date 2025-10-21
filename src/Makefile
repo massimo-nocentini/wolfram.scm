@@ -1,5 +1,10 @@
 
 
+
+graph:
+	cd test && CHICKEN_WOLFRAM_PORT=8081 csi -s hansei-graph.scm
+
+
 hansei:
 	cd test && CHICKEN_WOLFRAM_PORT=8081 csi -s test.scm
 	cd test && CHICKEN_WOLFRAM_PORT=8081 csi -s hansei-base.scm
