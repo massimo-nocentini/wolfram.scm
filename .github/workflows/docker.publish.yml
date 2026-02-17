@@ -14,7 +14,18 @@ env:
 # There is a single job in this workflow. It's configured to run on the latest available version of Ubuntu.
 jobs:
     build-and-push-image:
-        runs-on: ubuntu-latest
+        strategy:
+            matrix:
+                include:
+                    - platform: linux/amd64 
+                      runner: ubuntu-latest
+                      arch: amd64
+                    - platform: linux/arm64 
+                      runner: ubuntu-24.04-arm
+                      arch: arm64
+        
+        runs-on: ${{ matrix.runner }}
+        
         # Sets the permissions granted to the `GITHUB_TOKEN` for the actions in this job.
         permissions:
             contents: read
