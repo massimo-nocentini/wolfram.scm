@@ -1,14 +1,15 @@
 
 
+CHICKEN_WOLFRAM_PORT=31415
 
 graph:
-	cd test && CHICKEN_WOLFRAM_PORT=8081 csi -s hansei-graph.scm
+	cd test && csi -s hansei-graph.scm
 
 
 hansei:
-	cd test && CHICKEN_WOLFRAM_PORT=8081 csi -s test.scm
-	cd test && CHICKEN_WOLFRAM_PORT=8081 csi -s hansei-base.scm
-	cd test && CHICKEN_WOLFRAM_PORT=8081 csi -s hansei-variable-elimination.scm
+	cd test && csi -s test.scm
+	cd test && csi -s hansei-base.scm
+	cd test && csi -s hansei-variable-elimination.scm
 
 install:
 	chicken-install -sudo
