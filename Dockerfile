@@ -1,5 +1,5 @@
 
-FROM --platform=${BUILDPLATFORM} ghcr.io/massimo-nocentini/wolframengine.docker:14.3 AS base
+FROM --platform=${BUILDPLATFORM} ghcr.io/massimo-nocentini/wolframengine.docker:14.3-${BUILDARCH} AS base
 
 FROM --platform=${BUILDPLATFORM} ghcr.io/massimo-nocentini/aux.scm:master
 
