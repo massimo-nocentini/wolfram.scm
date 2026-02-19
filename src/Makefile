@@ -1,5 +1,6 @@
 
 
+CHICKEN_WOLFRAM_HOST=host.docker.internal
 CHICKEN_WOLFRAM_PORT=31415
 
 graph:
